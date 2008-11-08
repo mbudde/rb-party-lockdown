@@ -1,0 +1,9 @@
+[RB Plugin]
+Loader=python
+Module=party-lockdown
+IAge=1
+Name=Party Lockdown
+Description=Makes it possible to lock party mode with a password.
+Authors=Michael Budde <mbudde@gmail.com>
+Copyright=Copyright © 2008 Michael Budde
+Website=http://www.rhythmbox.org/
