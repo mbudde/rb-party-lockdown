@@ -40,7 +40,7 @@ class PreferenceDialog(object):
         return self.dialog
 
 
-class UnlockDialog:
+class UnlockDialog(object):
     def __init__(self, plugin, callback):
         self.plugin = plugin
         self.callback = callback

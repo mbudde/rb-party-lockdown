@@ -20,7 +20,7 @@ import rhythmdb, rb
 import gobject, gtk
 
 from Preferences import Preferences
-from Dialogs import PreferenceDialog, UnlockDiaglog
+from Dialogs import PreferenceDialog, UnlockDialog
 
 ui_lock_toggle = """
 <ui>
