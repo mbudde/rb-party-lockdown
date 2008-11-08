@@ -19,7 +19,8 @@
 import rhythmdb, rb
 import gobject, gtk
 
-from Preferences import PreferenceDialog, Preferences
+from Preferences import Preferences
+from Dialogs import PreferenceDialog, UnlockDiaglog
 
 ui_lock_toggle = """
 <ui>
@@ -159,27 +160,3 @@ class LockToggle:
             else:
                 widget.hide()
 
-class UnlockDialog:
-    def __init__(self, plugin, callback):
-        self.plugin = plugin
-        self.callback = callback
-        glade_file = self.plugin.find_file('party-lockdown-unlock.glade')
-        self.gladexml = gtk.glade.XML(glade_file)
-        
-        self.dialog = self.gladexml.get_widget("unlock_dialog")
-        self.password = self.gladexml.get_widget("password")
-
-        self.dialog.connect("response", self.dialog_response)
-
-    def dialog_response(self, dialog, response):
-        success = False
-        if response == 2:
-            if self.password.get_text() == self.plugin.prefs.get_password():
-                success = True
-
-        self.password.set_text('')
-        dialog.hide()
-        self.callback(success)
-
-    def get_dialog(self):
-        return self.dialog

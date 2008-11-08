@@ -60,25 +60,3 @@ class Preferences(object):
             self.callback()
 
 
-class PreferenceDialog(object):
-    def __init__(self, plugin):
-        self.plugin = plugin
-        glade_file = self.plugin.find_file('party-lockdown-prefs.glade')
-        self.gladexml = gtk.glade.XML(glade_file)
-        
-        self.dialog = self.gladexml.get_widget('preferences_dialog')
-        self.password = self.gladexml.get_widget('password')
-        self.hide_menu_bar = self.gladexml.get_widget('hide_menu_bar')
-
-        self.dialog.connect('close', self.dialog_response)
-
-        self.password.set_text(self.plugin.prefs.get_password())
-        self.hide_menu_bar.set_active(self.plugin.prefs.get_hide_menu_bar())
-
-    def dialog_response(self, dialog, response):
-        self.plugin.prefs.set_password(self.password.get_text())
-        self.plugin.prefs.set_hide_menu_bar(self.hide_menu_bar.get_active())
-        dialog.hide()
-
-    def get_dialog(self):
-        return self.dialog
