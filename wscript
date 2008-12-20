@@ -1,15 +1,13 @@
 #! /usr/bin/env python
 # encoding: utf-8
-# Gustavo Carneiro, 2007
 
 VERSION='0.1'
 PLUGINNAME='party-lockdown'
-APPNAME='rb-%s' % PLUGINNAME
+APPNAME='rb-' + PLUGINNAME
 
 srcdir = 'src'
 blddir = 'build'
 
-import os.path
 import Scripting
 Scripting.g_gz = 'gz'
 
@@ -26,27 +24,26 @@ def configure(conf):
     conf.check_python_module('gconf')
 
     conf.env['PLUGINNAME'] = PLUGINNAME
-    #import Params
-    #if not Params.g_options.destdir:
-        ##conf.env['DESTDIR'] = Params.g_options.destdir
-        ##conf.env['DESTDIR'] = os.path.expanduser('~/.gnome2/rhythmbox/plugins')
-        #Params.g_options.destdir = os.path.expanduser('~/.gnome2/rhythmbox/plugins')
-    #print 'Installation directory set to \'%s/%s\'' % (conf.env.get_destdir(), PLUGINNAME)
 
 def build(bld):
-    obj = bld.create_obj('py')
+    obj = bld.new_task_gen('py')
     obj.find_sources_in_dirs('.', exts=['.py'])
-    obj.inst_var = 0
-    
-    print obj.env.get_destdir()
-    import Common, Params
-    if not obj.env.get_destdir():
-        Params.g_options.destdir = os.path.expanduser('~/.gnome2/rhythmbox/plugins')
+    obj.install_path = None
 
-    install_files('PLUGINNAME', '', '*.py')
-    install_files('PLUGINNAME', '', '*.glade')
-    install_files('PLUGINNAME', '', '*.rb-plugin')
-    #obj.inst_var = 'DESTDIR'
-    #obj.inst_dir = PLUGINNAME
+    import misc
+    obj = bld.new_task_gen('subst')
+    obj.source = 'party-lockdown.rb-plugin.in'
+    obj.target = 'party-lockdown.rb-plugin'
+    obj.dict = {'PLUGINNAME': PLUGINNAME, 'VERSION': VERSION}
+    obj.fun = misc.subst_func
+
+    print bld.env.get_destdir()
+    import Options, os.path
+    if not bld.env.get_destdir():
+        Options.options.destdir = os.path.expanduser('~/.gnome2/rhythmbox/plugins')
+
+    bld.install_files(PLUGINNAME, '*.py')
+    bld.install_files(PLUGINNAME, '*.glade')
+    bld.install_files(PLUGINNAME, 'party-lockdown.rb-plugin')
 
 
