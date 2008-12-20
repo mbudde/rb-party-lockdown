@@ -28,7 +28,7 @@ class PreferenceDialog(object):
         self.password = self.gladexml.get_widget('password')
         self.hide_menu_bar = self.gladexml.get_widget('hide_menu_bar')
 
-        self.dialog.connect('close', self.dialog_response)
+        self.dialog.connect("response", self.dialog_response)
 
         self.password.set_text(self.plugin.prefs.get_password())
         self.hide_menu_bar.set_active(self.plugin.prefs.get_hide_menu_bar())
