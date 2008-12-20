@@ -6,4 +6,4 @@ Name=Party Lockdown
 Description=Makes it possible to lock party mode with a password.\nVersion @VERSION@.
 Authors=Michael Budde <mbudde@gmail.com>
 Copyright=Copyright © 2008 Michael Budde
-Website=http://www.rhythmbox.org/
+Website=https://launchpad.net/rb-party-lockdown
