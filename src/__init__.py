@@ -84,7 +84,7 @@ class LockToggle:
                                        'Password protect party mode', None)
         self.action.connect('toggled', self.lock_toggled)
         self.action_group = gtk.ActionGroup('LockPartyModePluginActions')
-        self.action_group.add_action_with_accel(self.action, 'F9')
+        self.action_group.add_action_with_accel(self.action, 'F12')
         self.uim.insert_action_group(self.action_group, 0)
 
         # FIXME: we could be starting in party mode
