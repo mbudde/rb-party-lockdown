@@ -48,8 +48,7 @@ class PartyLockdown(rb.Plugin):
 
         # Connect callbacks
         self.party_mode_toggle = uim.get_widget('/MenuBar/ViewMenu/ViewPartyModeMenu')
-        self.pmt_conn_id = self.party_mode_toggle.connect('toggled', self.party_mode_toggled)
-
+        self.pmt_conn_id = self.party_mode_toggle.connect('toggled',  self.party_mode_toggled)
 
     def deactivate(self, shell):
         self.party_mode_toggle.disconnect(self.pmt_conn_id)
@@ -72,7 +71,7 @@ class PartyLockdown(rb.Plugin):
         return dialog
 
 
-class LockToggle:
+class LockToggle(object):
     def __init__(self, plugin):
         self.plugin = plugin
         self.uim = plugin.shell.get_ui_manager()
@@ -118,13 +117,15 @@ class LockToggle:
                                  '/MenuBar/EditMenu/EditPluginsMenu',
                                  '/MenuBar/EditMenu/EditPreferencesMenu',
                                  '/MenuBar/HelpMenu']
-        self.widgets_disable = list([self.uim.get_widget(path) for path in widgets_disable_paths])
+        self.widgets_disable = list([self.uim.get_widget(path) for 
+                                     path in widgets_disable_paths])
 
         # Widgets to be hidden when locking down
         widgets_hide_paths = []
         if self.plugin.prefs.get_hide_menu_bar():
             widgets_hide_paths.append('/MenuBar')
-        self.widgets_hide = list([self.uim.get_widget(path) for path in widgets_hide_paths])
+        self.widgets_hide = list([self.uim.get_widget(path) for
+                                  path in widgets_hide_paths])
 
     def lock_toggled(self, widget):
         "Lock/unlock party mode"
