@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2008 Michael Budde <mbudde@gmail.com>
+# Copyright (C) 2008-2009 Michael Budde <mbudde@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,10 +25,14 @@ import gconf
 from os import system, path
 
 class Preferences(object):
+"Responsible for getting and setting gconf preferences."
+
     def __init__(self):
         self.gconf = gconf.client_get_default()
-        self.gconf_keys = {'password': '/apps/rhythmbox/plugins/party-lockdown/password',
-                           'hide_menu_bar': '/apps/rhythmbox/plugins/party-lockdown/hide_menu_bar'}
+        self.gconf_keys = {
+            'password': '/apps/rhythmbox/plugins/party-lockdown/password',
+            'hide_menu_bar': '/apps/rhythmbox/plugins/party-lockdown/hide_menu_bar'
+        }
 
         if self.get_password() is None:
             self.set_password('')

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2008 Michael Budde <mbudde@gmail.com>
+# Copyright (C) 2008-2009 Michael Budde <mbudde@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,10 +36,13 @@ ui_lock_toggle = """
 
 
 class PartyLockdown(rb.Plugin):
+
     def __init__(self):
         rb.Plugin.__init__(self)
 
     def activate(self, shell):
+        "Activate plugin."
+        
         self.shell = shell
         self.prefs = Preferences()
         uim = shell.get_ui_manager()
@@ -51,6 +54,8 @@ class PartyLockdown(rb.Plugin):
         self.pmt_conn_id = self.party_mode_toggle.connect('toggled',  self.party_mode_toggled)
 
     def deactivate(self, shell):
+        "Deactivate plugin."
+        
         self.party_mode_toggle.disconnect(self.pmt_conn_id)
         self.lock_toggle = None
 
@@ -63,6 +68,8 @@ class PartyLockdown(rb.Plugin):
             self.lock_toggle.action.set_sensitive(False)
 
     def create_configure_dialog(self, dialog=None):
+        "Show configure dialog and return dialog object."
+        
         if not dialog:
             dialog = PreferenceDialog(self).get_dialog()
 
@@ -72,6 +79,8 @@ class PartyLockdown(rb.Plugin):
 
 
 class LockToggle(object):
+"Class responsible for locking and unlocking Party Mode."
+
     def __init__(self, plugin):
         self.plugin = plugin
         self.uim = plugin.shell.get_ui_manager()
@@ -128,7 +137,7 @@ class LockToggle(object):
                                   path in widgets_hide_paths])
 
     def lock_toggled(self, widget):
-        "Lock/unlock party mode"
+        "Lock/unlock Party Mode depending of the status of the menu widget."
 
         if widget.get_active():
             assert self.is_locked == False, 'trying to lock but we are already locked'
