@@ -95,8 +95,9 @@ class LockToggle(object):
         self.action_group.add_action_with_accel(self.action, 'F12')
         self.uim.insert_action_group(self.action_group, 0)
 
-        # FIXME: we could be starting in party mode
-        self.action.set_sensitive(False)
+        pm_widget = self.uim.get_widget('/MenuBar/ViewMenu/ViewPartyModeMenu')
+        if not pm_widget.get_active(): # We're not in Party Mode.
+            self.action.set_sensitive(False)
         self.is_locked = False
 
         # Setup UI
@@ -117,7 +118,7 @@ class LockToggle(object):
         self.uim.ensure_update()
 
     def prefs_updated(self):
-        # Widgets to be disabled when locking down
+        # Widgets to be disabled or hidden when locking down.
         widget_paths = {
             'disable': [
                 '/MenuBar/MusicMenu/MusicImportFileMenu',
