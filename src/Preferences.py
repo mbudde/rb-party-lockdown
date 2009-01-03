@@ -25,7 +25,7 @@ import gconf
 from os import system, path
 
 class Preferences(object):
-"Responsible for getting and setting gconf preferences."
+    """Responsible for getting and setting gconf preferences."""
 
     def __init__(self):
         self.gconf = gconf.client_get_default()

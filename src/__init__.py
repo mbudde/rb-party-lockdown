@@ -41,7 +41,7 @@ class PartyLockdown(rb.Plugin):
         rb.Plugin.__init__(self)
 
     def activate(self, shell):
-        "Activate plugin."
+        """Activate plugin."""
         
         self.shell = shell
         self.prefs = Preferences()
@@ -54,13 +54,13 @@ class PartyLockdown(rb.Plugin):
         self.pmt_conn_id = self.party_mode_toggle.connect('toggled',  self.party_mode_toggled)
 
     def deactivate(self, shell):
-        "Deactivate plugin."
+        """Deactivate plugin."""
         
         self.party_mode_toggle.disconnect(self.pmt_conn_id)
         self.lock_toggle = None
 
     def party_mode_toggled(self, widget):
-        "Enable menu item when party mode is enabled."
+        """Enable menu item when party mode is enabled."""
         
         if widget.get_active():
             self.lock_toggle.action.set_sensitive(True)
@@ -68,7 +68,7 @@ class PartyLockdown(rb.Plugin):
             self.lock_toggle.action.set_sensitive(False)
 
     def create_configure_dialog(self, dialog=None):
-        "Show configure dialog and return dialog object."
+        """Show configure dialog and return dialog object."""
         
         if not dialog:
             dialog = PreferenceDialog(self).get_dialog()
@@ -79,7 +79,7 @@ class PartyLockdown(rb.Plugin):
 
 
 class LockToggle(object):
-"Class responsible for locking and unlocking Party Mode."
+    """Class responsible for locking and unlocking Party Mode."""
 
     def __init__(self, plugin):
         self.plugin = plugin
@@ -117,27 +117,30 @@ class LockToggle(object):
         self.uim.ensure_update()
 
     def prefs_updated(self):
-        # FIXME: This function is ugly and useless
         # Widgets to be disabled when locking down
-        widgets_disable_paths = ['/MenuBar/MusicMenu/MusicImportFileMenu',
-                                 '/MenuBar/MusicMenu/MusicImportFolderMenu',
-                                 '/MenuBar/MusicMenu/MusicPropertiesMenu',
-                                 '/MenuBar/ViewMenu/ViewPartyModeMenu',
-                                 '/MenuBar/EditMenu/EditPluginsMenu',
-                                 '/MenuBar/EditMenu/EditPreferencesMenu',
-                                 '/MenuBar/HelpMenu']
-        self.widgets_disable = list([self.uim.get_widget(path) for 
-                                     path in widgets_disable_paths])
-
-        # Widgets to be hidden when locking down
-        widgets_hide_paths = []
+        widget_paths = {
+            'disable': [
+                '/MenuBar/MusicMenu/MusicImportFileMenu',
+                '/MenuBar/MusicMenu/MusicImportFolderMenu',
+                '/MenuBar/MusicMenu/MusicPropertiesMenu',
+                '/MenuBar/ViewMenu/ViewPartyModeMenu',
+                '/MenuBar/EditMenu/EditPluginsMenu',
+                '/MenuBar/EditMenu/EditPreferencesMenu',
+                '/MenuBar/HelpMenu'
+            ],
+            'hide': []
+        }
+        
         if self.plugin.prefs.get_hide_menu_bar():
-            widgets_hide_paths.append('/MenuBar')
-        self.widgets_hide = list([self.uim.get_widget(path) for
-                                  path in widgets_hide_paths])
+            widget_paths['hide'].append('/MenuBar')
+        
+        self.widgets = {}
+        for action, paths in widget_paths.iteritems():
+            self.widgets[action] = list(self.uim.get_widget(path) for 
+                                        path in paths)
 
     def lock_toggled(self, widget):
-        "Lock/unlock Party Mode depending of the status of the menu widget."
+        """Lock/unlock Party Mode depending of the status of the menu widget."""
 
         if widget.get_active():
             assert self.is_locked == False, 'trying to lock but we are already locked'
@@ -158,15 +161,13 @@ class LockToggle(object):
         self.disable_widgets(False)
         
     def disable_widgets(self, disable=True):
-        for widget in self.widgets_disable:
-            widget.set_sensitive(not disable)
-            action = widget.get_action()
-            if action != None:
-                action.set_sensitive(not disable)
-
-        for widget in self.widgets_hide:
-            if not disable:
-                widget.show()
-            else:
-                widget.hide()
+        for action, widgets in self.widgets.iteritems():
+            for widget in widgets:
+                if action == 'disable':
+                    widget.set_sensitive(not disable)
+                    widget_action = widget.get_action()
+                    if action != None:
+                        widget_action.set_sensitive(not disable)
+                elif action == 'hide':
+                    disable and widget.hide() or widget.show()
 
