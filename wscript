@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
-VERSION='0.1'
+VERSION='0.2'
 PLUGINNAME='party-lockdown'
 APPNAME='rb-' + PLUGINNAME
 
@@ -17,7 +17,6 @@ def set_options(opt):
 def configure(conf):
     conf.check_tool('python')
     conf.check_python_version((2,4,2))
-    #conf.check_python_headers()
 
     conf.check_python_module('gobject')
     conf.check_python_module('gtk')
@@ -37,7 +36,6 @@ def build(bld):
     obj.dict = {'PLUGINNAME': PLUGINNAME, 'VERSION': VERSION}
     obj.fun = misc.subst_func
 
-    print bld.env.get_destdir()
     import Options, os.path
     if not bld.env.get_destdir():
         Options.options.destdir = os.path.expanduser('~/.gnome2/rhythmbox/plugins')
