@@ -56,8 +56,15 @@ class PartyLockdown(rb.Plugin):
     def deactivate(self, shell):
         """Deactivate plugin."""
         
+        # FIXME: LockToggle seems to not be destroyed when deactivating plugin.
         self.party_mode_toggle.disconnect(self.pmt_conn_id)
-        self.lock_toggle = None
+        self.lock_toggle.uim.remove_ui(self.lock_toggle.ui_toggle)
+        self.lock_toggle.uim.remove_action_group(self.lock_toggle.action_group)
+        self.lock_toggle.uim.ensure_update()
+        del self.lock_toggle
+
+        del self.shell
+        del self.prefs
 
     def party_mode_toggled(self, widget):
         """Enable menu item when party mode is enabled."""
@@ -90,7 +97,7 @@ class LockToggle(object):
         # Setup locking action
         self.action = gtk.ToggleAction('ToggleLockPartyMode', 'Lock Party Mode',
                                        'Password protect party mode', None)
-        self.action.connect('toggled', self.lock_toggled)
+        self.action_conn_id = self.action.connect('toggled', self.lock_toggled)
         self.action_group = gtk.ActionGroup('LockPartyModePluginActions')
         self.action_group.add_action_with_accel(self.action, 'F12')
         self.uim.insert_action_group(self.action_group, 0)
@@ -112,10 +119,15 @@ class LockToggle(object):
         self.uim.remove_ui(self.ui_toggle)
         self.uim.remove_action_group(self.action_group)
 
-        self.action_group = None
-        self.action = None
+        self.action.disconnect(self.action_conn_id)
+        del self.action_group
+        del self.action
 
         self.uim.ensure_update()
+
+        del self.plugin
+        del self.uim
+        del self.uplock_dialog
 
     def prefs_updated(self):
         # Widgets to be disabled or hidden when locking down.
