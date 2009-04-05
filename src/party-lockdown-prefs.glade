@@ -3,7 +3,7 @@
 <!--*- mode: xml -*-->
 <glade-interface>
   <widget class="GtkDialog" id="preferences_dialog">
-    <property name="visible">True</property>
+    <property name="visible">False</property>
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Party Lockdown Preferences</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
