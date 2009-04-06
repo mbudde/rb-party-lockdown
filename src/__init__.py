@@ -23,7 +23,7 @@ import rb
 import rhythmdb
 
 from locking import PartyModeLock
-from preferences import PartyLockdownPrefs
+from preferences import GConfPreferences, PreferenceDialog
 
 ui_lock_toggle = """
 <ui>
@@ -45,15 +45,18 @@ class PartyLockdown(rb.Plugin):
     def activate(self, shell):
         """Activate plugin."""
         self.shell = shell
+        self.prefs = GConfPreferences('/apps/rhythmbox/plugins/party-lockdown',
+                {'password': '',
+                 'hide_menu_bar': False})
         glade_path = self.find_file('party-lockdown-prefs.glade')
-        self.prefs = PartyLockdownPrefs(glade_path)
+        self.pref_dialog = PreferenceDialog(self.prefs, glade_path)
         self.party_mode_lock = PartyModeLock(self)
 
         uim = shell.get_ui_manager()
 
         # Connect callback for Party Mode toggle
         self.party_mode_toggle = uim.get_widget('/MenuBar/ViewMenu'\
-                                           '/ViewPartyModeMenu')
+                                                '/ViewPartyModeMenu')
         self.pmt_conn_id = self.party_mode_toggle.connect('toggled',
                                             self.party_mode_toggled)
 
@@ -79,9 +82,9 @@ class PartyLockdown(rb.Plugin):
         """Deactivate plugin."""
         uim = shell.get_ui_manager()
 
-        self.prefs.shutdown()
         self.party_mode_lock.shutdown()
         del self.prefs
+        del self.pref_dialog
         del self.party_mode_lock
         del self.shell
 
@@ -99,7 +102,7 @@ class PartyLockdown(rb.Plugin):
     def create_configure_dialog(self, dialog=None):
         """Show configure dialog and return dialog object."""
         if not dialog:
-            dialog = self.prefs.dialog.get_dialog()
+            dialog = self.pref_dialog.get_dialog()
         dialog.present()
         return dialog
 

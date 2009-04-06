@@ -46,14 +46,13 @@ class HideWidgetLocker(WidgetLocker):
     def unlock(self):
         self._hide(False)
 
-class HideWidgetLockerWithPref(HideWidgetLocker):
-    def __init__(self, uim, widget_path, pref, value=True):
-        super(HideWidgetLockerWithPref, self).__init__(uim, widget_path)
-        self.pref = pref
-        self.lock_val = value
+class HideWidgetLockerWithCond(HideWidgetLocker):
+    def __init__(self, uim, widget_path, func):
+        super(HideWidgetLockerWithCond, self).__init__(uim, widget_path)
+        self.func = func
 
     def lock(self):
-        if self.pref.get() == self.lock_val:
+        if self.func():
             self._hide(True)
 
 
@@ -67,18 +66,14 @@ class LockerManager(object):
         for locker in self.lockers:
             del locker
 
-    def add_lock(self, path, type, pref=None, lock_value=None):
+    def add_lock(self, path, type, func=None):
         if type == 'disable':
             self.lockers.append(DisableWidgetLocker(self.uim, path))
         if type == 'hide':
             self.lockers.append(HideWidgetLocker(self.uim, path))
         if type == 'hide_with_pref':
-            if not pref == None:
-                if lock_value == None:
-                    self.lockers.append(HideWidgetLockerWithPref(self.uim, path, pref))
-                else:
-                    self.lockers.append(HideWidgetLockerWithPref(self.uim, path, pref,
-                                                                 lock_value))
+            if not func == None:
+                self.lockers.append(HideWidgetLockerWithCond(self.uim, path, func))
 
     def lock_all(self):
         for locker in self.lockers:
@@ -94,7 +89,7 @@ class PartyModeLock(object):
 
     def __init__(self, plugin):
         self.plugin = plugin
-        self.plugin.prefs.on_update(self.prefs_updated)
+        #self.plugin.prefs.on_update(self.prefs_updated)
         self._is_locked = False
 
         self.lockers = LockerManager(plugin.shell.get_ui_manager())
@@ -120,7 +115,8 @@ class PartyModeLock(object):
             '/MenuBar/HelpMenu', 'disable'
         )
         self.lockers.add_lock(
-            '/MenuBar', 'hide_with_pref', plugin.prefs['hide_menu_bar']
+            '/MenuBar', 'hide_with_pref',
+            lambda: plugin.prefs['hide_menu_bar']
         )
 
         self.unlock_dialog = UnlockDialog(plugin, self.unlock_callback)
@@ -169,7 +165,7 @@ class UnlockDialog(object):
     def dialog_response(self, dialog, response):
         success = False
         if response == 2:
-            if self.password.get_text() == self.plugin.prefs.get('password'):
+            if self.password.get_text() == self.plugin.prefs['password']:
                 success = True
 
         self.password.set_text('')

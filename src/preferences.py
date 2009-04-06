@@ -17,100 +17,122 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+import os
 import gtk
 import gtk.glade
 import gconf
-import os
-
-class Preference(object):
-    def __init__(self, path, default):
-        self.gconf = gconf.client_get_default()
-        self.path = path
-        self.default = default
-
-    def get(self):
-        try:
-            return self.gconf.get_value(self.path)
-        except ValueError:
-            self.set(self.default)
-            return self.default
-
-    def set(self, val):
-        self.gconf.set_value(self.path, val)
-
-    def shutdown(self):
-        del self.gconf
 
 
-class PreferenceManager(object):
+class GConfPreferences(object):
+    """Convenience class taking care of getting and setting
+    GConf keys.
+    """
 
-    def __init__(self, dir):
-        self.prefs_dir = dir
-        self.prefs = {}
-        self._callbacks = []
+    defaults = {}
 
-    def shutdown(self):
-        for key in self.prefs:
-            self.prefs[key].shutdown()
+    def __init__(self, gconf_dir, defaults={}):
+        """Init class. defaults should be a dict containing
+        key-value pairs of default preferences.
+        """
+        self.defaults.update(defaults)
+        self.gconf_dir = gconf_dir
+        self._gconf = gconf.client_get_default()
 
+    def get_path(self, key):
+        if '/' in key:
+            raise ValueError, "key must not contain '/'"
+        if self.gconf_dir[-1] == '/':
+            return self.gconf_dir + key
+        else:
+            return '/'.join([self.gconf_dir, key])
+        
     def __getitem__(self, key):
-        return self.prefs[key]
+        """Get preference. If a GConf key does not exist
+        create it with the value from defaults and return
+        this value. If a default value does not exist raise 
+        ValueError.
+        """
+        try:
+            return self._gconf.get_value(self.get_path(key))
+        except ValueError, msg:
+            if key in self.defaults:
+                self.__setitem__(key, self.defaults[key])
+                return self.defaults[key]
+            else:
+                raise ValueError, msg
 
-    def add_pref(self, key, default):
-        path = '%s/%s' % (self.prefs_dir, key)
-        if key not in self.prefs:
-            self.prefs[key] = Preference(path, default)
+    def __setitem__(self, key, val):
+        """Set GConf key."""
+        self._gconf.set_value(self.get_path(key), val)
 
-    def get(self, key):
-        return self.prefs[key].get()
+    def __delitem__(self, key):
+        """Unset GConf key."""
+        self._gconf.unset(self.get_path(key))
 
-    def set(self, key, value):
-        self.prefs[key].set(value)
-        for cb in self._callbacks:
-            cb(key, value)
+    def __contains__(self, key):
+        """Return true if the GConf key exists, otherwise
+        return false.
+        """
+        try:
+            self.__getitem__(key)
+            return True
+        except ValueError:
+            return False
 
-    def on_update(self, cb):
-        if not cb in self._callbacks:
-            self._callbacks.append(cb)
+    def watch(self, key, cb):
+        """Call the callback function 'cb', passing a string
+        containing the key name, when the GConf key is changed.
+        """
+        if not self.__contains__(key):
+            raise ValueError, 'key %s does not exist' % self.get_path(key)
+        id = self._gconf.notify_add(self.get_path(key), cb, key)
+        return id
 
-
-class PartyLockdownPrefs(PreferenceManager):
-    plugin_gconf_dir = '/apps/rhythmbox/plugins/party-lockdown'
-
-    def __init__(self, prefs_glade_path):
-        super(PartyLockdownPrefs, self).__init__(self.plugin_gconf_dir)
-
-        self.add_pref('password', '')
-        self.add_pref('hide_menu_bar', False)
-
-        self.dialog = PartyLockdownPrefsDialog(self, prefs_glade_path)
-
-    def shutdown(self):
-        super(PartyLockdownPrefs, self).shutdown()
+    def unwatch(self, id):
+        self._gconf.notify_remove(id)
 
 
-class PartyLockdownPrefsDialog(object):
+class PreferenceWrapper(object):
+    """A wrapper class that takes care of keeping GConf preferences
+    and widgets in sync.
+    """
+    
+    def __init__(self, prefs):
+        self.prefs = prefs
+
+    def wrap(self, key, widget, get_method, set_method, signal):
+        set_method(widget, self.prefs[key])
+        def update_pref(widget):
+            self.prefs[key] = get_method(widget)
+        widget.connect(signal, update_pref)
+
+    def wrap_toggle(self, key, widget):
+        self.wrap(key, widget,
+                  get_method=lambda w: w.get_active(),
+                  set_method=lambda w, v: w.set_active(v),
+                  signal='toggled')
+
+    def wrap_textinput(self, key, widget):
+        self.wrap(key, widget,
+                  get_method=lambda w: w.get_text(),
+                  set_method=lambda w, v: w.set_text(v),
+                  signal='changed')
+
+
+class PreferenceDialog(PreferenceWrapper):
 
     def __init__(self, prefs, prefs_glade_path):
-        self.prefs = prefs
+        PreferenceWrapper.__init__(self, prefs)
         gladexml = gtk.glade.XML(prefs_glade_path)
         
         self._dialog = gladexml.get_widget('preferences_dialog')
-        self._password = gladexml.get_widget('password')
-        self._password.set_text(self.prefs.get('password'))
-        self._hide_menu_bar = gladexml.get_widget('hide_menu_bar')
-        self._hide_menu_bar.set_active(self.prefs.get('hide_menu_bar'))
 
-        self._dialog.connect('response', self.dialog_response)
+        password = gladexml.get_widget('password')
+        hide_menu_bar = gladexml.get_widget('hide_menu_bar')
+        self.wrap_textinput('password', password)
+        self.wrap_toggle('hide_menu_bar', hide_menu_bar)
 
-    def shutdown(self):
-        del self.prefs
-        del self._dialog
-
-    def dialog_response(self, dialog, response):
-        self.prefs.set('password', self._password.get_text())
-        self.prefs.set('hide_menu_bar', self._hide_menu_bar.get_active())
-        dialog.hide()
+        self._dialog.connect('response', lambda d, r: self._dialog.hide())
 
     def get_dialog(self):
         return self._dialog
