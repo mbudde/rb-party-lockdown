@@ -25,7 +25,11 @@ import rhythmdb
 from locking import PartyModeLock
 from preferences import GConfPreferences, PreferenceDialog
 
-ui_lock_toggle = """
+PARTY_LOCKDOWN_GCONF_PATH = '/apps/rhythmbox/plugins/party-lockdown'
+PREFS_DIALOG_GLADE = 'party-lockdown-prefs.glade'
+UNLOCK_DIALOG_GLADE = 'party-lockdown-unlock.glade'
+
+LOCK_TOGGLE_UI = """
 <ui>
   <menubar name="MenuBar">
     <menu name="ViewMenu" action="View">
@@ -38,76 +42,67 @@ ui_lock_toggle = """
 """
 
 class PartyLockdown(rb.Plugin):
+    default_prefs = {
+        'password': '',
+        'hide_menu_bar': False,
+    }
 
     def __init__(self):
-        super(PartyLockdown, self).__init__()
+        rb.Plugin.__init__(self)
 
     def activate(self, shell):
-        """Activate plugin."""
-        self.shell = shell
-        self.prefs = GConfPreferences('/apps/rhythmbox/plugins/party-lockdown',
-                {'password': '',
-                 'hide_menu_bar': False})
-        glade_path = self.find_file('party-lockdown-prefs.glade')
-        self.pref_dialog = PreferenceDialog(self.prefs, glade_path)
-        self.party_mode_lock = PartyModeLock(self)
+        self.prefs = GConfPreferences(PARTY_LOCKDOWN_GCONF_PATH,
+                                      self.default_prefs)
+        pref_glade = self.find_file(PREFS_DIALOG_GLADE)
+        self.pref_dialog = PreferenceDialog(self.prefs, pref_glade)
 
         uim = shell.get_ui_manager()
+        unlock_glade = self.find_file(UNLOCK_DIALOG_GLADE)
+        self.partymode_lock = PartyModeLock(self.prefs, uim, unlock_glade)
 
         # Connect callback for Party Mode toggle
-        self.party_mode_toggle = uim.get_widget('/MenuBar/ViewMenu'\
-                                                '/ViewPartyModeMenu')
-        self.pmt_conn_id = self.party_mode_toggle.connect('toggled',
-                                            self.party_mode_toggled)
+        self.partymode_toggle = uim.get_widget('/MenuBar/ViewMenu/ViewPartyModeMenu')
+        self.pmt_id = self.partymode_toggle.connect('toggled', self.partymode_toggled)
 
         # Set up action for Party Mode lock
         self.lock_toggle = gtk.ToggleAction('ToggleLockPartyMode',
-                                            'Lock Party Mode',
-                                            'Password protect party mode',
-                                            None)
-        self.action_conn_id = self.lock_toggle.connect('toggled',
-                                                       self.lock_toggled)
+                                            _('Lock Party Mode'),
+                                            _('Password protect party mode'),
+                                            'rb-lock-partymode')
+        self.lt_id = self.lock_toggle.connect('toggled', self.lock_toggled)
         self.action_group = gtk.ActionGroup('LockPartyModePluginActions')
         self.action_group.add_action_with_accel(self.lock_toggle, 'F12')
+        self.ui_id = uim.add_ui_from_string(LOCK_TOGGLE_UI)
         uim.insert_action_group(self.action_group, 0)
-
-        if not self.party_mode_toggle.get_active():
-            self.lock_toggle.set_sensitive(False)
-
-        self.ui_toggle = uim.add_ui_from_string(ui_lock_toggle)
         uim.ensure_update()
 
+        if not shell.get_party_mode():
+            self.lock_toggle.set_sensitive(False)
 
     def deactivate(self, shell):
-        """Deactivate plugin."""
-        uim = shell.get_ui_manager()
-
-        self.party_mode_lock.shutdown()
+        self.partymode_lock.shutdown()
         del self.prefs
         del self.pref_dialog
-        del self.party_mode_lock
-        del self.shell
+        del self.partymode_lock
 
         # Clean up UI
-        self.party_mode_toggle.disconnect(self.pmt_conn_id)
-        self.lock_toggle.disconnect(self.action_conn_id)
-        uim.remove_ui(self.ui_toggle)
+        uim = shell.get_ui_manager()
+        self.partymode_toggle.disconnect(self.pmt_id)
+        self.lock_toggle.disconnect(self.lt_id)
+        uim.remove_ui(self.ui_id)
         uim.remove_action_group(self.action_group)
-        del self.party_mode_toggle
+        uim.ensure_update()
+        del self.partymode_toggle
         del self.lock_toggle
         del self.action_group
 
-        uim.ensure_update()
-
     def create_configure_dialog(self, dialog=None):
-        """Show configure dialog and return dialog object."""
         if not dialog:
             dialog = self.pref_dialog.get_dialog()
         dialog.present()
         return dialog
 
-    def party_mode_toggled(self, widget):
-        """Enable menu item when party mode is enabled."""
+    def partymode_toggled(self, widget):
         if widget.get_active():
             self.lock_toggle.set_sensitive(True)
         else:
@@ -115,9 +110,9 @@ class PartyLockdown(rb.Plugin):
 
     def lock_toggled(self, widget):
         if widget.get_active():
-            self.party_mode_lock.lock()
+            self.partymode_lock.lock()
         else:
-            self.party_mode_lock.unlock(self.unlock_callback)
+            self.partymode_lock.unlock(self.unlock_callback)
 
     def unlock_callback(self, success):
         if not success:
