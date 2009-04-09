@@ -1,0 +1,27 @@
+Party Lockdown - Rhythmbox plugin
+
+ABOUT
+-----
+The purpose of this plugin is to protect "Party Mode" with a password to
+prevent users from going out of "Party Mode". It also disables some menu 
+items and other widgets that could be abused or is not useful in a party
+situation.
+
+Website: https://launchpad.net/party-lockdown
+
+
+INSTALLATION
+------------
+To install the plugin run:
+
+    ./waf configure
+    ./waf install
+
+This defaults to installing the plugin system-wide.
+To install "user-wide" use:
+
+    ./waf configure --user-wide
+
+To install in another directory use:
+
+    ./waf configure --destdir=/foo/bar
