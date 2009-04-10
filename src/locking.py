@@ -56,10 +56,11 @@ class WidgetLocker(object):
         self._lock_func(False)
 
     def _hide(self, hiding):
-        if hiding:
-            self.widget.hide()
-        else:
-            self.widget.show()
+        if hiding: self.widget.hide()
+        else: self.widget.show()
+        action = self.widget.get_action()
+        if action != None:
+            action.set_sensitive(not hiding)
 
     def _disable(self, disabling):
         self.widget.set_sensitive(not disabling)
@@ -118,7 +119,13 @@ class PartyModeLock(object):
               '/MenuBar/EditMenu/EditPreferencesMenu',
               '/MenuBar/HelpMenu'], 'disable'),
             (['/MenuBar'], 'hide_with_cond',
-             lambda: prefs['hide_menu_bar'])
+             lambda: prefs['hide_menu_bar']),
+            (['/MenuBar/ControlMenu/ControlPreviousMenu',
+              '/MenuBar/ControlMenu/ControlNextMenu',
+              '/ToolBar/Previous',
+              '/ToolBar/Next'],
+             'hide_with_cond',
+             lambda: prefs['hide_next_prev'])
         ]
         self.lockers = LockerManager(uim, locks)
 

@@ -127,10 +127,14 @@ class PreferenceDialog(PreferenceWrapper):
         
         self._dialog = gladexml.get_widget('preferences_dialog')
 
-        password = gladexml.get_widget('password')
-        hide_menu_bar = gladexml.get_widget('hide_menu_bar')
-        self.wrap_textinput('password', password)
-        self.wrap_toggle('hide_menu_bar', hide_menu_bar)
+        wraps = (
+            ('password', 'password', self.wrap_textinput),
+            ('hide_menu_bar', 'hide_menu_bar', self.wrap_toggle),
+            ('hide_next_prev', 'hide_next_prev', self.wrap_toggle)
+        )
+        for prefkey, widgetname, wrapfun in wraps:
+            widget = gladexml.get_widget(widgetname)
+            wrapfun(prefkey, widget)
 
         self._dialog.connect('response', lambda d, r: self._dialog.hide())
 

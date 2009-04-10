@@ -45,6 +45,7 @@ class PartyLockdown(rb.Plugin):
     default_prefs = {
         'password': '',
         'hide_menu_bar': False,
+        'hide_next_prev': False
     }
 
     def __init__(self):
