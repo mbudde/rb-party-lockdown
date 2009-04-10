@@ -22,10 +22,11 @@ To install "user-wide" use:
 
     ./waf configure --user-wide
 
-This will install to `~/.gnome2/rhythmbox/plugins`.
-To install in another directory use:
+The plugin will be install to `~/.local/share/rhythmbox/plugins`.
+This requires that you run at least Rhythmbox version 0.12.0. If
+you are running an older version install with:
 
-    ./waf configure --destdir=/foo/bar
+    ./waf configure --destdir=~/.gnome2/rhythmbox/plugins
 
 
 LICENSE

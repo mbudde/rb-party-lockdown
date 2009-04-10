@@ -28,12 +28,12 @@ def configure(conf):
     #conf.check_python_module('gconf')
 
     import Options, Utils, os.path
-    conf.env['destdir'] = Options.options.destdir
+    conf.env['destdir'] = os.path.expanduser(Options.options.destdir)
     if not conf.env['destdir']:
         if Options.options.system_wide:
             conf.env['destdir'] = '/usr/lib/rhythmbox/plugins'
         else:
-            conf.env['destdir'] = os.path.expanduser('~/.gnome2/rhythmbox/plugins')
+            conf.env['destdir'] = os.path.expanduser('~/.local/share/rhythmbox/plugins')
     print 'Plugin installation directory :',
     Utils.pprint('GREEN', '%s' % conf.env['destdir'])
 
