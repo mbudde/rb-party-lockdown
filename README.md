@@ -1,13 +1,13 @@
 Party Lockdown - Rhythmbox plugin
+=================================
 
-ABOUT
------
 The purpose of this plugin is to protect "Party Mode" with a password to
 prevent users from going out of "Party Mode". It also disables some menu 
 items and other widgets that could be abused or is not useful in a party
 situation.
 
-Website: https://launchpad.net/party-lockdown
+If you want to report a bug or ask a question please go to
+[the projects page](https://launchpad.net/rb-party-lockdown) at Launchpad.
 
 
 INSTALLATION
@@ -40,4 +40,4 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-See COPYING for the full GNU General Public License.
+See `COPYING` for the full GNU General Public License.
