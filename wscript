@@ -7,7 +7,7 @@ VERSION     = '0.3'
 DESCRIPTION = 'Lock “Party Mode” with a password and disable GUI elements that could be abused.'
 WEBSITE     = 'https://launchpad.net/rb-party-lockdown'
 
-srcdir = 'src'
+srcdir = '.'
 blddir = 'build'
 
 import Scripting
@@ -26,6 +26,7 @@ def configure(conf):
     #conf.check_python_module('gobject')
     #conf.check_python_module('gtk')
     #conf.check_python_module('gconf')
+    conf.check_tool('misc')
 
     import Options, Utils, os.path
     conf.env['destdir'] = os.path.expanduser(Options.options.destdir)
@@ -34,8 +35,8 @@ def configure(conf):
             conf.env['destdir'] = '/usr/lib/rhythmbox/plugins'
         else:
             conf.env['destdir'] = os.path.expanduser('~/.local/share/rhythmbox/plugins')
-    print 'Plugin installation directory :',
-    Utils.pprint('GREEN', '%s' % conf.env['destdir'])
+    conf.check_message_1('Plugin installation directory')
+    conf.check_message_2('%s' % conf.env['destdir'])
 
     conf.env['PLUGINNAME']  = PLUGINNAME
     conf.env['APPNAME']     = APPNAME
@@ -44,19 +45,17 @@ def configure(conf):
     conf.env['WEBSITE']     = WEBSITE
 
 def build(bld):
-    import misc
     bld.new_task_gen(
         features='subst',
-        source='party-lockdown.rb-plugin.in',
+        source='src/party-lockdown.rb-plugin.in',
         target='party-lockdown.rb-plugin',
-        dict=bld.env,
-        fun=misc.subst_func
+        dict=bld.env
     )
     bld.compile()
 
     import Options
     Options.options.destdir = bld.env['destdir']
 
-    bld.install_files(PLUGINNAME, '*.py')
-    bld.install_files(PLUGINNAME, '*.glade')
+    bld.install_files(PLUGINNAME, 'src/*.py')
+    bld.install_files(PLUGINNAME, 'src/*.glade')
     bld.install_files(PLUGINNAME, 'party-lockdown.rb-plugin')

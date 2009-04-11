@@ -13,19 +13,18 @@ If you want to report a bug or ask a question please go to
 
 To install the plugin run:
 
-    ./waf configure
-    ./waf install
+    ./waf configure install
 
 This defaults to installing the plugin system-wide.
 To install "user-wide" use:
 
-    ./waf configure --user-wide
+    ./waf configure install --user-wide
 
 The plugin will be install to `~/.local/share/rhythmbox/plugins`.
 This requires that you run at least Rhythmbox version 0.12.0. If
 you are running an older version install with:
 
-    ./waf configure --destdir=~/.gnome2/rhythmbox/plugins
+    ./waf configure install --destdir=~/.gnome2/rhythmbox/plugins
 
 
 ### License ###
