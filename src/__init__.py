@@ -1,6 +1,6 @@
 #
 # Party Lockdown
-# Copyright (C) 2008, 2009 Michael Budde <mbudde@gmail.com>
+# Copyright (C) 2008, 2009, 2010 Michael Budde <mbudde@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
