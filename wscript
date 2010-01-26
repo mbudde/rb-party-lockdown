@@ -57,5 +57,6 @@ def build(bld):
     Options.options.destdir = bld.env['destdir']
 
     bld.install_files(PLUGINNAME, 'src/*.py')
+    bld.install_files(PLUGINNAME, 'src/*.ui')
     bld.install_files(PLUGINNAME, 'src/*.glade')
     bld.install_files(PLUGINNAME, 'party-lockdown.rb-plugin')

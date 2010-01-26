@@ -27,7 +27,7 @@ from preferences import GConfPreferences, PreferenceDialog
 
 PARTY_LOCKDOWN_GCONF_PATH = '/apps/rhythmbox/plugins/party-lockdown'
 PREFS_DIALOG_GLADE = 'party-lockdown-prefs.glade'
-UNLOCK_DIALOG_GLADE = 'party-lockdown-unlock.glade'
+UNLOCK_BAR_UI = 'party-lockdown-unlock-bar.ui'
 
 LOCK_TOGGLE_UI = """
 <ui>
@@ -58,8 +58,8 @@ class PartyLockdown(rb.Plugin):
         self.pref_dialog = PreferenceDialog(self.prefs, pref_glade)
 
         uim = shell.get_ui_manager()
-        unlock_glade = self.find_file(UNLOCK_DIALOG_GLADE)
-        self.partymode_lock = PartyModeLock(self.prefs, uim, unlock_glade)
+        unlock_ui = self.find_file(UNLOCK_BAR_UI)
+        self.partymode_lock = PartyModeLock(self.prefs, shell, uim, unlock_ui)
 
         # Connect callback for Party Mode toggle
         self.partymode_toggle = uim.get_widget('/MenuBar/ViewMenu/ViewPartyModeMenu')

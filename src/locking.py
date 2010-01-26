@@ -18,6 +18,8 @@
 #
 
 import gtk
+import rb
+
 
 class WidgetLocker(object):
     types = [
@@ -67,10 +69,10 @@ class WidgetLocker(object):
         action = self.widget.get_action()
         if action != None:
             action.set_sensitive(not disabling)
-    
+
 
 class LockerManager(object):
-    
+
     def __init__(self, uim, locks=[]):
         self.lockers = []
         self.uim = uim
@@ -105,12 +107,12 @@ class LockerManager(object):
 class PartyModeLock(object):
     """Class responsible for locking and unlocking Party Mode."""
 
-    def __init__(self, prefs, uim, unlock_glade):
+    def __init__(self, prefs, shell, uim, unlock_ui):
         self.prefs = prefs
         #self.plugin.prefs.on_update(self.prefs_updated)
         self._is_locked = False
 
-        locks = [	
+        locks = [
             (['/MenuBar/MusicMenu/MusicImportFileMenu',
               '/MenuBar/MusicMenu/MusicImportFileMenu',
               '/MenuBar/MusicMenu/MusicPropertiesMenu',
@@ -129,13 +131,13 @@ class PartyModeLock(object):
         ]
         self.lockers = LockerManager(uim, locks)
 
-        self.unlock_dialog = UnlockDialog(prefs, unlock_glade, self.unlock_callback)
+        self.unlock_bar = UnlockBar(prefs, shell, unlock_ui, self.unlock_callback)
 
     def shutdown(self):
         self.lockers.shutdown()
-        self.unlock_dialog.shutdown()
+        self.unlock_bar.shutdown()
         del self.lockers
-        del self.unlock_dialog
+        del self.unlock_bar
 
     def lock(self):
         if self._is_locked == False:
@@ -144,7 +146,7 @@ class PartyModeLock(object):
 
     def unlock(self, callback):
         if self._is_locked == True:
-            self.unlock_dialog.get_dialog().present()
+            self.unlock_bar.present()
             self.on_unlock_cb = callback
 
     def unlock_callback(self, success):
@@ -157,33 +159,48 @@ class PartyModeLock(object):
 
     def prefs_updated(self, key, val):
         pass
-        
 
-class UnlockDialog(object):
-    def __init__(self, prefs, glade_file, callback):
+
+class UnlockBar(object):
+    def __init__(self, prefs, shell, ui_file, callback):
         self.prefs = prefs
+        self.shell = shell
         self.callback = callback
-        gladexml = gtk.glade.XML(glade_file)
-        
-        self.dialog = gladexml.get_widget("unlock_dialog")
-        self.password = gladexml.get_widget("password")
+        builder = gtk.Builder()
+        builder.add_from_file(ui_file)
 
-        self.dialog.connect("response", self.dialog_response)
+        self.bar = builder.get_object("unlock_bar")
+        self.password = builder.get_object("password")
 
-    def dialog_response(self, dialog, response):
+        builder.get_object('cancel').connect("clicked", self.cancel)
+        unlock = builder.get_object('unlock')
+        unlock.connect("clicked", self.unlock)
+        def activate_unlock(widget):
+            unlock.clicked()
+        self.password.connect('activate', activate_unlock)
+
+    def unlock(self, widget):
         success = False
-        if response == 2:
-            if self.password.get_text() == self.prefs['password']:
-                success = True
+        if self.password.get_text() == self.prefs['password']:
+            success = True
 
         self.password.set_text('')
-        dialog.hide()
+        self.hide()
         self.callback(success)
+
+    def cancel(self, widget):
+        self.hide()
+        self.callback(False)
 
     def shutdown(self):
         del self.prefs
-        del self.dialog
+        del self.shell
+        del self.bar
         del self.password
 
-    def get_dialog(self):
-        return self.dialog
+    def present(self):
+        self.shell.add_widget(self.bar, rb.SHELL_UI_LOCATION_MAIN_TOP)
+        self.password.grab_focus()
+
+    def hide(self):
+        self.shell.remove_widget(self.bar, rb.SHELL_UI_LOCATION_MAIN_TOP)
