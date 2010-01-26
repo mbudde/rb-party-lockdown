@@ -3,7 +3,7 @@
 
 PLUGINNAME  = 'party-lockdown'
 APPNAME     = 'rb-party-lockdown'
-VERSION     = '0.3'
+VERSION     = '0.4'
 DESCRIPTION = 'Lock “Party Mode” with a password and disable GUI elements that could be abused.'
 WEBSITE     = 'https://launchpad.net/rb-party-lockdown'
 
