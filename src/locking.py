@@ -113,9 +113,7 @@ class PartyModeLock(object):
         self._is_locked = False
 
         locks = [
-            (['/MenuBar/MusicMenu/MusicImportFileMenu',
-              '/MenuBar/MusicMenu/MusicImportFileMenu',
-              '/MenuBar/MusicMenu/MusicPropertiesMenu',
+            (['/MenuBar/MusicMenu',
               '/MenuBar/ViewMenu/ViewPartyModeMenu',
               '/MenuBar/EditMenu/EditPluginsMenu',
               '/MenuBar/EditMenu/EditPreferencesMenu',
